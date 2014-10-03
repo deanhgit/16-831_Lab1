@@ -2,8 +2,8 @@ function [ prob ] = get_reading_prob( reading, expected , params )
 %GET_READING_PROB Summary of this function goes here
 %   everything in cm
 
-% max_read = params.max_read;
-% max_read_prob = params.max_read_prob;
+max_read = params.max_read;
+max_read_prob = params.max_read_prob;
 sig = params.sigma;
 g_w = params.gaussian_weight;
 e_w = params.exponential_weight;
