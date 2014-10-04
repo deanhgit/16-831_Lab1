@@ -30,7 +30,7 @@ g_w = 0.7;
 sigma = 50;
 % hist(R)
 % sigma = std(R)
-lambda = 0.01;
+lambda = 0.001;
 u_w = 0.05;
 e_w = 1-max_read_prob-g_w-u_w;
 
