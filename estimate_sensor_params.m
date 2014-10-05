@@ -24,14 +24,14 @@ max_line = 81;
 
 % max_read_prob = 0.1;
 % g_w = 0.8;
-max_read_prob = 0.0;
-g_w = 0.8;
+max_read_prob = 0;
+g_w = 0.5;
 % sigma = 5;
-sigma = 50;
+sigma = 100;
 % hist(R)
 % sigma = std(R)
-lambda = 0.01;
-u_w = 0.01;
+lambda = 0.0015;
+u_w = 0.05;
 e_w = 1-max_read_prob-g_w-u_w;
 
 offset = u_w/max_read;

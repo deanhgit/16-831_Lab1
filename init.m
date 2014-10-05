@@ -1,12 +1,15 @@
-function [map, particles] = init(map_file, M)
+function [map, particles, initial_entropy] = init(map_file, M)
     angle_samples = 1;
+    prob_power = 0;
 
     map = loadMap(map_file);
     prob = map.prob;
-    known_grids = find(prob>=0);
-    sample_prob = prob(known_grids).^2;
-    particles_id = randsample(known_grids, M/angle_samples, true, sample_prob/sum(sample_prob(:))); %% squared prob
+    known_grids = find(prob>=0.9);
+    sample_prob = prob(known_grids).^prob_power;
+    sample_prob = sample_prob/sum(sample_prob(:));
+    particles_id = randsample(known_grids, M/angle_samples, true, sample_prob); %% squared prob
     [y, x] = ind2sub([map.size_y, map.size_x], particles_id);
+    initial_entropy = -mean(log(prob(particles_id)))*prob_power;
     particles = [repmat([x, y], [angle_samples, 1]) rand(M, 1)*2*pi];
     visualize(map, [], particles);
 end

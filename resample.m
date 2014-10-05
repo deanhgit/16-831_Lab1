@@ -3,6 +3,8 @@ function [new_particles, entropy, new_weights] = resample(particles, weights, nu
         num_samples = size(particles, 1);
     end
 
+%     new_info_threshold = 1.05;
+    new_info_threshold = -(log(0.95/(0.05*num_samples))*0.05 + log(0.05/(0.95*num_samples))*0.95);
     weights = weights + min(weights(weights>0));
     weights = weights/sum(weights(:));
 
@@ -10,10 +12,10 @@ function [new_particles, entropy, new_weights] = resample(particles, weights, nu
 %     new_samples_idx = randsample(particles_idx, num_samples, true, weights);
 %     new_particles = particles(new_samples_idx, :);
     entropy = -mean(log(weights(weights>0)));
-%     fprintf('entropy = %d\n', entropy);
-    ratio = max(weights(:))/min(weights(:));
-    fprintf('max(W)/min(W) = %d\n', ratio);
-    if true %ratio < 1e5 %old_entropy > 0 && entropy > 1.05*old_entropy
+    fprintf('entropy = %d -> %d ', old_entropy, entropy);
+%     ratio = max(weights(:))/min(weights(:));
+%     fprintf('max(W)/min(W) = %d\n', ratio);
+    if entropy > new_info_threshold%*old_entropy
         fprintf('Resampling...');
         new_particles = zeros(size(particles));
         new_weights = zeros(size(weights));
@@ -32,7 +34,9 @@ function [new_particles, entropy, new_weights] = resample(particles, weights, nu
         end
         fprintf(' Done\n');
     else
+        fprintf('\n');
         new_particles = particles;
         new_weights = weights;
+%         entropy = old_entropy;
     end
 end

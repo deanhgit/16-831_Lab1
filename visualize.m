@@ -15,7 +15,7 @@ function visualize(map, robot_pos, particles, frame_num)
     figure(map_fig);
     clf;
     mat = map.prob;
-    mat = (mat+1)/2;
+    mat(mat<0) = 0;
     imagesc(mat);
     colormap('gray');
     axis([map.min_y map.max_y map.min_x map.max_x]);
@@ -40,7 +40,7 @@ function visualize(map, robot_pos, particles, frame_num)
     
     hold off
     drawnow
-    saveas(figure(findobj('type', 'figure', 'name', 'map')), sprintf('frames/frame_%03d', frame_num), 'png');
+    saveas(figure(findobj('type', 'figure', 'name', 'map')), sprintf('frame1000/frame_%03d', frame_num), 'png');
 end
 
 function drawRobot(robot_pos, radius)

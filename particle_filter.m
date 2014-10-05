@@ -28,12 +28,12 @@ if numCores > 1
     matlabpool('local',numCores);
 end
 %% particle_filter
-[map, particles] = init(map_file, num_particles);
+[map, particles, entropy] = init(map_file, num_particles);
 drawnow;
 [sensor_data, laser_data, odometry_data] = getSensorData(data_file);
 [sensor_params] = estimate_sensor_params();
 iter = 1;
-entropy = 0;
+% entropy = 0;
 W = ones(1, num_particles)/num_particles;
 
 while length(sensor_data) > 1
@@ -110,7 +110,8 @@ while length(sensor_data) > 1
 %     W = zeros(size(logW));
     vlog = logW(~invalid);
 %     vlog = vlog - min(vlog) + minLog;
-    W(~invalid) = W(~invalid).*exp(1*vlog/30);
+    W = sqrt(W);
+    W(~invalid) = W(~invalid).*exp(1*vlog/40);
     W(invalid) = W(invalid).*min(W(~invalid));
     W = W/sum(W(:));
 
