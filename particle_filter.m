@@ -115,7 +115,7 @@ while length(sensor_data) > 1
     vlog = logW(~invalid);
 %     vlog = vlog - min(vlog) + minLog;
     W = W.^0.8;
-    W(~invalid) = W(~invalid).*exp(1*vlog/20);
+    W(~invalid) = W(~invalid).*exp(1*vlog/30);
     W(invalid) = W(invalid).*min(W(~invalid));
     W = W/sum(W(:));
 
