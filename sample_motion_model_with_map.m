@@ -4,6 +4,7 @@ function [prediction, observation, pos_offset, move, sensor_data] = sample_motio
     pos_offset = [];
     move = false;
     N = size(particles, 1);
+    wall_threshold = 0.1;
     
     last_laser_reading = [];
     while length(sensor_data) > 1
@@ -35,7 +36,7 @@ function [prediction, observation, pos_offset, move, sensor_data] = sample_motio
             pose_consistency(valid_grid_idx)... 
                 = map.prob(sub2ind([map.size_y, map.size_x], grid_level_prediction(valid_grid_idx,2), grid_level_prediction(valid_grid_idx,1)));
             resample_iteration = 0;
-            while ~isempty(pose_consistency(pose_consistency <= 0.1)) && resample_iteration < 500
+            while ~isempty(pose_consistency(pose_consistency <= wall_threshold & pose_consistency >= 0)) && resample_iteration < 500
                 inconsistent_idx = find(pose_consistency <= 0);
                 prediction(inconsistent_idx, :) = sample_motion_model(particles(inconsistent_idx, :), action, dt);
                 grid_level_prediction = round(prediction(:, 1:2));
@@ -63,7 +64,7 @@ function [prediction] = sample_motion_model(particles, action, dt, resolution)
     K = 1;
 
     A = [3, 1, 3, 0.25];
-    a = dt*A;
+    a = 3*dt*A;
 %     a = 0.5*ones(4, 1);
     N = size(particles, 1);
     X = particles(:,1); Y = particles(:,2); THETA = particles(:,3);
@@ -74,6 +75,7 @@ function [prediction] = sample_motion_model(particles, action, dt, resolution)
     d_rot_2 = dtheta - d_rot_1;
     
     sigmas = [a(1)*d_rot_1.^2+a(2)*d_trans.^2, a(3)*d_trans.^2+a(4)*(d_rot_1.^2+d_rot_2.^2), a(1)*d_rot_2.^2+a(2)*d_trans.^2];
+%     sigmas = zeros(4, 1);
     
     dd_rot_1 = d_rot_1 - normrnd(0, sigmas(1), [N, K]);
     dd_trans = d_trans - normrnd(0, sigmas(2), [N, K]);

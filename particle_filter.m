@@ -34,15 +34,19 @@ drawnow;
 [sensor_params] = estimate_sensor_params();
 iter = 1;
 % entropy = 0;
+got_initial_likelihood = false;
 W = ones(1, num_particles)/num_particles;
 
 while length(sensor_data) > 1
 %     unique(particles,'rows')
+    
     [particles, observation, offset, move, sensor_data] = sample_motion_model_with_map(particles, sensor_data, map);
+    
 %     unique(particles,'rows')
-    if ~move
+    if got_initial_likelihood && ~move
         continue;
     end
+    
     logW = zeros(1,num_particles);
 %     W = ones(1,num_particles);
     xx = particles(:,1) + offset(1);
@@ -110,8 +114,8 @@ while length(sensor_data) > 1
 %     W = zeros(size(logW));
     vlog = logW(~invalid);
 %     vlog = vlog - min(vlog) + minLog;
-    W = sqrt(W);
-    W(~invalid) = W(~invalid).*exp(1*vlog/40);
+    W = W.^0.8;
+    W(~invalid) = W(~invalid).*exp(1*vlog/20);
     W(invalid) = W(invalid).*min(W(~invalid));
     W = W/sum(W(:));
 
@@ -120,8 +124,12 @@ while length(sensor_data) > 1
         W = ones(size(W)); 
     end
     
+    [particles, entropy, W] = resample(particles, W, num_particles, entropy, ~got_initial_likelihood);
     
-    [particles, entropy, W] = resample(particles, W, num_particles, entropy);
+    if ~got_initial_likelihood
+        got_initial_likelihood = true;
+        W = ones(1, num_particles)/num_particles;
+    end
     
     visualize(map, [], particles, iter);
     iter = iter+1;

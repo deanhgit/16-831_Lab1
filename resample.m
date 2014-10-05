@@ -1,10 +1,12 @@
-function [new_particles, entropy, new_weights] = resample(particles, weights, num_samples, old_entropy)
+function [new_particles, entropy, new_weights] = resample(particles, weights, num_samples, old_entropy, force_resample)
     if nargin == 2
         num_samples = size(particles, 1);
+    elseif nargin == 4
+        force_resample = false;
     end
 
 %     new_info_threshold = 1.05;
-    new_info_threshold = -(log(0.95/(0.05*num_samples))*0.05 + log(0.05/(0.95*num_samples))*0.95);
+    new_info_threshold = -(log(0.90/(0.10*num_samples))*0.10 + log(0.10/(0.90*num_samples))*0.90);
     weights = weights + min(weights(weights>0));
     weights = weights/sum(weights(:));
 
@@ -15,7 +17,7 @@ function [new_particles, entropy, new_weights] = resample(particles, weights, nu
     fprintf('entropy = %d -> %d ', old_entropy, entropy);
 %     ratio = max(weights(:))/min(weights(:));
 %     fprintf('max(W)/min(W) = %d\n', ratio);
-    if entropy > new_info_threshold%*old_entropy
+    if force_resample || entropy > new_info_threshold%*old_entropy
         fprintf('Resampling...');
         new_particles = zeros(size(particles));
         new_weights = zeros(size(weights));
