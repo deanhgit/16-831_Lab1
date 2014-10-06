@@ -36,8 +36,8 @@ function [prediction, observation, pos_offset, move, sensor_data] = sample_motio
             pose_consistency(valid_grid_idx)... 
                 = map.prob(sub2ind([map.size_y, map.size_x], grid_level_prediction(valid_grid_idx,2), grid_level_prediction(valid_grid_idx,1)));
             resample_iteration = 0;
-            while ~isempty(pose_consistency(pose_consistency <= wall_threshold & pose_consistency >= 0)) && resample_iteration < 500
-                inconsistent_idx = find(pose_consistency <= 0);
+            while ~isempty(pose_consistency(pose_consistency <= wall_threshold)) && resample_iteration < 500
+                inconsistent_idx = find(pose_consistency <= wall_threshold);
                 prediction(inconsistent_idx, :) = sample_motion_model(particles(inconsistent_idx, :), action, dt);
                 grid_level_prediction = round(prediction(:, 1:2));
                 pose_consistency = zeros(N, 1);
@@ -47,8 +47,10 @@ function [prediction, observation, pos_offset, move, sensor_data] = sample_motio
                 resample_iteration = resample_iteration + 1;
             end
             if resample_iteration == 500
-                inconsistent_idx = find(pose_consistency <= 0);
-                prediction(inconsistent_idx, :) = particles(inconsistent_idx, :);
+                inconsistent_idx = find(pose_consistency <= wall_threshold);
+                consistent_idx = find(pose_consistency > wall_threshold);
+                more_samples = resample_in_motion_model(prediction(consistent_idx, :), numel(inconsistent_idx), pose_consistency(consistent_idx));
+                prediction(inconsistent_idx, :) = sample_motion_model(more_samples, action, dt, map.resolution);
             end
         else
             prediction = particles;
@@ -94,4 +96,21 @@ function [prediction] = sample_motion_model(particles, action, dt, resolution)
 %     TT = repmat(THETA, [1, K]) + dd_rot_1 + dd_rot_2;
     
     prediction = [X Y THETA];
+end
+
+function [new_particles] = resample_in_motion_model(particles, num_samples, weights)
+    new_particles = zeros(num_samples, size(particles, 2));
+    weights = weights/sum(weights(:));
+    r = rand/num_samples;
+    c = weights(1);
+    i = 1;
+
+    for m = 1:num_samples
+        U = r+(m-1)/num_samples;
+        while U > c
+            i = mod(i, num_samples)+1;
+            c = c+weights(i);
+        end
+        new_particles(m,:) = particles(i,:);
+    end
 end
