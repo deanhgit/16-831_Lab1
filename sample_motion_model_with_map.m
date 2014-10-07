@@ -49,8 +49,10 @@ function [prediction, observation, pos_offset, move, sensor_data] = sample_motio
             if resample_iteration == 500
                 inconsistent_idx = find(pose_consistency <= wall_threshold);
                 consistent_idx = find(pose_consistency > wall_threshold);
-                more_samples = resample_in_motion_model(prediction(consistent_idx, :), numel(inconsistent_idx), pose_consistency(consistent_idx));
-                prediction(inconsistent_idx, :) = sample_motion_model(more_samples, action, dt, map.resolution);
+		if ~isempty(consistent_idx)
+                    more_samples = resample_in_motion_model(prediction(consistent_idx, :), numel(inconsistent_idx), pose_consistency(consistent_idx));
+                    prediction(inconsistent_idx, :) = sample_motion_model(more_samples, action, dt, map.resolution);
+		end
             end
         else
             prediction = particles;

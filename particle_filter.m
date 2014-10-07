@@ -114,16 +114,17 @@ while length(sensor_data) > 1
 %     W = zeros(size(logW));
     vlog = logW(~invalid);
 %     vlog = vlog - min(vlog) + minLog;
-    W = W.^0.8;
-    W(~invalid) = W(~invalid).*exp(1*vlog/30);
-    W(invalid) = W(invalid).*min(W(~invalid));
-    W = W/sum(W(:));
 
-    if sum(W) == 0
+    if length(find(~invalid)) == 0
         fprintf('all zeros. uniform sampling!!!!!!!\n');
         W = ones(size(W)); 
+    else
+        W = W.^0.8;
+        W(~invalid) = W(~invalid).*exp(1*vlog/30);
+        W(invalid) = W(invalid)*min(W(~invalid));
     end
     
+    W = W/sum(W(:));
     % update num_particles
     min_num_particles = 1000;
     num_particles = max(min_num_particles, num_particles - 500 );
