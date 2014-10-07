@@ -19,21 +19,35 @@ function [new_particles, entropy, new_weights] = resample(particles, weights, nu
 %     fprintf('max(W)/min(W) = %d\n', ratio);
     if force_resample || entropy > new_info_threshold%*old_entropy
         fprintf('Resampling...');
-        new_particles = zeros(size(particles));
-        new_weights = zeros(size(weights));
-        r = rand/num_samples;
-        c = weights(1);
-        i = 1;
+        %new_particles = zeros(size(particles));
+        %new_weights = zeros(size(weights));
+	new_particles = zeros(num_samples, size(particles, 2));
+	new_weights = zeros(1, num_samples);
+	
+	r = mnrnd(num_samples, weights);
+	current_row = 1;
+	for i = 1:length(r)
+	    num = r(i);
+	    p = particles(i,:);
+	    w = weights(i);
+	    new_particles(current_row:current_row + num - 1, :) = repmat(p, [num, 1]);	
+	    new_weights(current_row:current_row + num - 1) = w;
+	    current_row = current_row + num;
+	end
 
-        for m = 1:num_samples
-            U = r+(m-1)/num_samples;
-            while U > c
-                i = mod(i, num_samples)+1;
-                c = c+weights(i);
-            end
-            new_particles(m,:) = particles(i,:);
-            new_weights(m) = weights(i);
-        end
+%        r = rand/num_samples;
+%        c = weights(1);
+%        i = 1;
+%
+%        for m = 1:num_samples
+%            U = r+(m-1)/num_samples;
+%            while U > c
+%                i = mod(i, num_samples)+1;
+%                c = c+weights(i);
+%            end
+%            new_particles(m,:) = particles(i,:);
+%            new_weights(m) = weights(i);
+%        end
         fprintf(' Done\n');
     else
         fprintf('\n');

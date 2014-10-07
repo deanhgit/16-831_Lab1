@@ -124,6 +124,10 @@ while length(sensor_data) > 1
         W = ones(size(W)); 
     end
     
+    % update num_particles
+    min_num_particles = 1000;
+    num_particles = max(min_num_particles, num_particles - 500 );
+
     [particles, entropy, W] = resample(particles, W, num_particles, entropy, ~got_initial_likelihood);
     
     if ~got_initial_likelihood
